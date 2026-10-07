@@ -7,10 +7,11 @@ void main() {
       McpApp.ensureInitialized();
     });
 
-    test('reports no host and empty launch data', () {
+    test('reports no host and an empty initial tool call', () {
       expect(McpApp.isHosted, isFalse);
-      expect(McpApp.launch.arguments, isEmpty);
-      expect(McpApp.launch.result, isNull);
+      expect(McpApp.initialToolCall.arguments, isEmpty);
+      expect(McpApp.initialToolCall.result, isNull);
+      expect(McpApp.arguments, isEmpty);
     });
 
     test('drops one-way messages', () {

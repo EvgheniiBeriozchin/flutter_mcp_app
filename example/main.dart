@@ -3,7 +3,7 @@ import 'package:flutter_mcp_app/flutter_mcp_app.dart';
 
 void main() {
   McpApp.ensureInitialized();
-  runApp(GreetingApp(name: McpApp.launch.string('name') ?? 'there'));
+  runApp(GreetingApp(name: McpApp.initialToolCall.string('name') ?? 'there'));
   McpApp.reportHeight(GreetingApp.height);
 }
 

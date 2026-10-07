@@ -1,8 +1,8 @@
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
-import 'package:flutter_mcp_app/src/mcp_app_arguments.dart';
 import 'package:flutter_mcp_app/src/mcp_app_exception.dart';
+import 'package:flutter_mcp_app/src/mcp_tool_call.dart';
 
 /// Bridge to the `mcp_app_shell.js` script that hosts the app.
 ///
@@ -27,11 +27,11 @@ class McpAppShell {
   /// Whether the app runs inside an MCP Apps host.
   static bool get isHosted => shell != null;
 
-  /// The tool call's launch data, or empty launch data outside a host.
-  static McpAppArguments get launch {
+  /// The tool call that opened the app, or an empty one outside a host.
+  static McpToolCall get initialToolCall {
     final current = shell;
-    if (current == null) return const McpAppArguments();
-    return McpAppArguments.fromObject({
+    if (current == null) return const McpToolCall();
+    return McpToolCall.fromObject({
       'arguments': current.getProperty<JSAny?>('arguments'.toJS).dartify(),
       'result': current.getProperty<JSAny?>('result'.toJS).dartify(),
     });

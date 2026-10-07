@@ -1,10 +1,10 @@
-/// How the MCP Apps host launched the app: the tool call's arguments and,
-/// once it arrived, the tool's result.
+/// A tool call as the app sees it: the arguments the model passed and, once
+/// it arrived, the tool's result.
 ///
-/// Read it with [McpApp.launch].
-class McpAppArguments {
-  /// Creates launch data from the tool [arguments] and [result].
-  const McpAppArguments({this.arguments = const {}, this.result});
+/// [McpApp.initialToolCall] is the call that opened the app.
+class McpToolCall {
+  /// Creates a tool call from its [arguments] and [result].
+  const McpToolCall({this.arguments = const {}, this.result});
 
   /// The arguments the model passed to the tool.
   final Map<String, Object?> arguments;
@@ -14,13 +14,13 @@ class McpAppArguments {
   /// for it.
   final Map<String, Object?>? result;
 
-  /// Reads launch data from a decoded `{arguments, result}` object, or returns
-  /// empty launch data if [launch] isn't one.
-  static McpAppArguments fromObject(Object? launch) {
-    if (launch is! Map) return const McpAppArguments();
-    return McpAppArguments(
-      arguments: asMap(launch['arguments']) ?? const {},
-      result: asMap(launch['result']),
+  /// Reads a tool call from a decoded `{arguments, result}` object, or returns
+  /// an empty one if [call] isn't one.
+  static McpToolCall fromObject(Object? call) {
+    if (call is! Map) return const McpToolCall();
+    return McpToolCall(
+      arguments: asMap(call['arguments']) ?? const {},
+      result: asMap(call['result']),
     );
   }
 

@@ -1,21 +1,22 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/widgets.dart';
-import 'package:flutter_mcp_app/src/mcp_app_arguments.dart';
 import 'package:flutter_mcp_app/src/mcp_app_shell.dart';
 import 'package:flutter_mcp_app/src/mcp_app_url_launcher.dart';
+import 'package:flutter_mcp_app/src/mcp_tool_call.dart';
 import 'package:flutter_mcp_app/src/mcp_tool_result.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
 
 /// Entry point for a Flutter web app running as an MCP App inside an AI chat.
 ///
-/// Call [ensureInitialized] first in `main`, then read [launch] and run the
-/// app:
+/// Call [ensureInitialized] first in `main`, then read [initialToolCall] and
+/// run the app:
 ///
 /// ```dart
 /// void main() {
 ///   McpApp.ensureInitialized();
-///   runApp(GreetingApp(name: McpApp.launch.string('name') ?? 'there'));
+///   final name = McpApp.initialToolCall.string('name') ?? 'there';
+///   runApp(GreetingApp(name: name));
 ///   McpApp.reportHeight(200);
 /// }
 /// ```
@@ -38,8 +39,13 @@ class McpApp {
   }
 
   /// The tool call that opened the app: its arguments and, if it arrived
-  /// before the app started, its result.
-  static McpAppArguments get launch => McpAppShell.launch;
+  /// before the app started, its result. Calls the app makes itself go
+  /// through [callServerTool].
+  static McpToolCall get initialToolCall => McpAppShell.initialToolCall;
+
+  /// The arguments the model passed to the tool that opened the app: a
+  /// shortcut for `initialToolCall.arguments`.
+  static Map<String, Object?> get arguments => initialToolCall.arguments;
 
   /// Whether the app runs inside an MCP Apps host.
   static bool get isHosted => McpAppShell.isHosted;

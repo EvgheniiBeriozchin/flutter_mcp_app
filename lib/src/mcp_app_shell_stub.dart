@@ -1,11 +1,11 @@
-import 'package:flutter_mcp_app/src/mcp_app_arguments.dart';
 import 'package:flutter_mcp_app/src/mcp_app_exception.dart';
+import 'package:flutter_mcp_app/src/mcp_tool_call.dart';
 
 /// Stand-in for the shell bridge on platforms without a browser (iOS, Android,
 /// desktop), where no MCP Apps host can be running the app.
 ///
-/// It lets one codebase import `flutter_mcp_app` everywhere: launch data is
-/// empty, one-way messages are dropped, and requests fail with
+/// It lets one codebase import `flutter_mcp_app` everywhere: the initial tool
+/// call is empty, one-way messages are dropped, and requests fail with
 /// [McpAppException].
 class McpAppShell {
   const McpAppShell._();
@@ -20,7 +20,7 @@ class McpAppShell {
   static bool get isHosted => false;
 
   /// Always empty.
-  static McpAppArguments get launch => const McpAppArguments();
+  static McpToolCall get initialToolCall => const McpToolCall();
 
   /// The current base URI.
   static Uri get baseUrl => Uri.base;

@@ -33,7 +33,7 @@ import 'package:flutter_mcp_app/flutter_mcp_app.dart';
 void main() {
   McpApp.ensureInitialized();
 
-  final name = McpApp.launch.string('name') ?? 'there';
+  final name = McpApp.initialToolCall.string('name') ?? 'there';
 
   runApp(GreetingApp(name: name));
   McpApp.reportHeight(200);
@@ -42,9 +42,10 @@ void main() {
 
 - `McpApp.ensureInitialized()` replaces `WidgetsFlutterBinding.ensureInitialized()`. It
   disables browser-history integration and routes `url_launcher` through the host.
-- `McpApp.launch` holds the tool call's `arguments` and, if it already arrived, the tool
-  result's `structuredContent`. `string(key)` and `integer(key)` check the arguments first,
-  then the result.
+- `McpApp.initialToolCall` is the tool call that opened the app: its `arguments` and, if it
+  already arrived, the tool result's `structuredContent` as `result`. `string(key)` and
+  `integer(key)` check the arguments first, then the result. `McpApp.arguments` is a
+  shortcut for `initialToolCall.arguments`.
 - `McpApp.reportHeight(height)` resizes the view in the chat.
 - `McpApp.openLink(url)` asks the host to open a URL.
 - `McpApp.callServerTool(name, arguments)` calls a tool on your MCP server, through the host
@@ -67,7 +68,7 @@ for example with Riverpod overrides or in-memory implementations:
 ### Other platforms
 
 The package compiles on every platform. Outside the browser no host can be running the app,
-so `McpApp.launch` is empty, one-way calls do nothing, and requests throw `McpAppException`.
+so `McpApp.initialToolCall` is empty, one-way calls do nothing, and requests throw `McpAppException`.
 You can call `McpApp.ensureInitialized()` unconditionally from a codebase that also ships to
 iOS, Android or desktop.
 
@@ -132,7 +133,7 @@ function myServer() {
 export default createMcpHandler(myServer);
 ```
 
-The app then reads the call in `main()` with `McpApp.launch.string('name')`: from the
+The app then reads the call in `main()` with `McpApp.initialToolCall.string('name')`: from the
 tool's arguments, or from its `structuredContent` (`data-start="result"` waits for it).
 `createMcpHandler` returns a `fetch` handler for Deno, Bun, Cloudflare Workers or Supabase
 Edge Functions; on Node, wrap it with `toNodeHandler` from `@modelcontextprotocol/node`.

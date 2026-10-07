@@ -1,4 +1,4 @@
-import 'package:flutter_mcp_app/src/mcp_app_arguments.dart';
+import 'package:flutter_mcp_app/src/mcp_tool_call.dart';
 
 /// The result of an MCP tool call made by the app, as returned by
 /// [McpApp.callServerTool].
@@ -18,10 +18,10 @@ class McpToolResult {
       content: [
         if (content is List)
           for (final item in content)
-            if (McpAppArguments.asMap(item) case final Map<String, Object?> map)
+            if (McpToolCall.asMap(item) case final Map<String, Object?> map)
               map,
       ],
-      structuredContent: McpAppArguments.asMap(result['structuredContent']),
+      structuredContent: McpToolCall.asMap(result['structuredContent']),
       isError: result['isError'] == true,
     );
   }
