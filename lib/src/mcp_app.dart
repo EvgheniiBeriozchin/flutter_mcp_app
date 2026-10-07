@@ -15,8 +15,8 @@ import 'package:url_launcher_platform_interface/url_launcher_platform_interface.
 /// ```dart
 /// void main() {
 ///   McpApp.ensureInitialized();
-///   runApp(MyApp(game: McpApp.launch.string('game')));
-///   McpApp.reportHeight(560);
+///   runApp(GreetingApp(name: McpApp.launch.string('name') ?? 'there'));
+///   McpApp.reportHeight(200);
 /// }
 /// ```
 class McpApp {

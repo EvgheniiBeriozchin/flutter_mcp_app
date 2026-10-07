@@ -3,16 +3,7 @@
 Run an existing Flutter web app as an [MCP App](https://modelcontextprotocol.io/extensions/apps/overview):
 interactive UI that an MCP server renders inside AI chats such as Claude.
 
-Your app keeps its own widgets, state management and backend calls. This package handles
-the parts that differ between chat hosts and that break a normal Flutter web build:
-
-| Problem in chat hosts | What the package does |
-|---|---|
-| A Flutter build is several MB, too big to inline into the MCP resource | Loads Flutter from your own origin into the host's frame, using `resourceDomains`/`connectDomains`, with every URL explicit |
-| Claude ignores `_meta.ui.csp.frameDomains`, so nested iframes are blocked there | Doesn't use a nested iframe |
-| Hosts sandbox the app with an **opaque origin**: reading `navigator.serviceWorker`, `history.replaceState` and `localStorage` throw | A bootstrap template with no service worker, and no browser-history integration |
-| `url_launcher` opens popups the sandbox blocks | Routes links through the host's `ui/open-link` |
-| The host needs the app's size, and the app needs the tool call's arguments | `McpApp.reportHeight()` and `McpApp.launch` |
+Your app keeps its own widgets, state management and backend calls.
 
 ## Setup
 
@@ -28,7 +19,7 @@ dart run flutter_mcp_app:init
 ```
 
 `init` writes `web/flutter_bootstrap.js`. It starts the app without a service worker, and
-inline with the shell's configuration when the shell is present. It refuses to overwrite an
+with the shell's configuration when the shell is present. It refuses to overwrite an
 existing file unless you pass `--force`.
 
 Use a dedicated Flutter web project (or entrypoint) for the chat app: the template drops
@@ -42,10 +33,10 @@ import 'package:flutter_mcp_app/flutter_mcp_app.dart';
 void main() {
   McpApp.ensureInitialized();
 
-  final game = McpApp.launch.string('game');
+  final name = McpApp.launch.string('name') ?? 'there';
 
-  runApp(MyApp(game: game));
-  McpApp.reportHeight(560);
+  runApp(GreetingApp(name: name));
+  McpApp.reportHeight(200);
 }
 ```
 
@@ -96,41 +87,65 @@ Access-Control-Allow-Origin: *
 
 ### 4. Point your MCP server at it
 
-The tool declares the UI resource, and the resource is a one-line stub that loads the
-package's shell from your build:
+The tool declares a UI resource, and the resource is a one-line stub that loads the
+package's shell from your build. With the official TypeScript SDK
+(`@modelcontextprotocol/server` and `@modelcontextprotocol/ext-apps`, version 2):
 
-```jsonc
-// tools/list
-{
-  "name": "show_packs",
-  "inputSchema": { "type": "object", "properties": { "game": { "type": "string" } } },
-  "_meta": { "ui": { "resourceUri": "ui://my-app/view/1" } }
+```ts
+import { registerAppResource, registerAppTool, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
+import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
+import { z } from "zod";
+
+const APP_URL = "https://app.example.com/"; // where your build/web is served
+const APP_ORIGIN = new URL(APP_URL).origin;
+const VIEW_URI = "ui://my-app/greeting";
+
+const csp = {
+  resourceDomains: [APP_ORIGIN],
+  connectDomains: [APP_ORIGIN, "https://api.example.com", "https://fonts.gstatic.com"],
+};
+
+const html = `<!DOCTYPE html><html><body>
+<script src="${APP_URL}assets/packages/flutter_mcp_app/assets/mcp_app_shell.js"
+        data-height="200" data-start="result"></script>
+</body></html>`;
+
+function myServer() {
+  const server = new McpServer({ name: "my-app", version: "1.0.0" });
+
+  registerAppResource(server, "greeting", VIEW_URI, { _meta: { ui: { csp } } }, () => ({
+    contents: [{ uri: VIEW_URI, mimeType: RESOURCE_MIME_TYPE, text: html, _meta: { ui: { csp } } }],
+  }));
+
+  registerAppTool(server, "greet", {
+    description: "Greet the user with an interactive card.",
+    inputSchema: z.object({ name: z.string() }),
+    _meta: { ui: { resourceUri: VIEW_URI } },
+  }, ({ name }) => ({
+    content: [{ type: "text", text: `Greeting ${name}.` }],
+    structuredContent: { name },
+  }));
+
+  return server;
 }
+
+export default createMcpHandler(myServer);
 ```
 
-```jsonc
-// resources/read  ui://my-app/view/1
-{
-  "contents": [{
-    "uri": "ui://my-app/view/1",
-    "mimeType": "text/html;profile=mcp-app",
-    "text": "<!DOCTYPE html><html><body><script src=\"https://app.example.com/assets/packages/flutter_mcp_app/assets/mcp_app_shell.js\" data-height=\"560\"></script></body></html>",
-    "_meta": {
-      "ui": {
-        "csp": {
-          "resourceDomains": ["https://app.example.com"],
-          "connectDomains": ["https://app.example.com", "https://api.example.com", "https://fonts.gstatic.com"]
-        }
-      }
-    }
-  }]
-}
-```
+The app then reads the call in `main()` with `McpApp.launch.string('name')`: from the
+tool's arguments, or from its `structuredContent` (`data-start="result"` waits for it).
+`createMcpHandler` returns a `fetch` handler for Deno, Bun, Cloudflare Workers or Supabase
+Edge Functions; on Node, wrap it with `toNodeHandler` from `@modelcontextprotocol/node`.
 
 - `resourceDomains` and `connectDomains` must include your build's origin (the shell loads
   its scripts, assets and CanvasKit from there), plus every API and font host the app calls.
-- **Version the resource URI** (for example with a hash of the HTML and CSP). Hosts cache UI
-  resources by URI, and Claude keeps serving an old one after you redeploy.
+  Flutter downloads fonts from `fonts.gstatic.com` unless you bundle them.
+- Hosts cache UI resources by URI. If a host keeps showing an old version after you
+  redeploy, reconnect the connector, or put a version in the URI.
+
+With another SDK or language, the resource is the same stub HTML with the MIME type
+`text/html;profile=mcp-app` and the CSP under `_meta.ui.csp`, and the tool points at it
+with `_meta.ui.resourceUri`.
 
 Shell attributes, all optional:
 

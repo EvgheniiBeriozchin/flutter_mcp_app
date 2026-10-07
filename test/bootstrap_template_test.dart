@@ -16,7 +16,7 @@ void main() {
       );
     });
 
-    test('starts inline with the shell config when the shell is present', () {
+    test('starts with the shell config when the shell is present', () {
       expect(
         BootstrapTemplate.contents,
         contains('window.mcpAppShell.flutterConfig'),

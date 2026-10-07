@@ -14,7 +14,7 @@ void main(List<String> args) {
   file.parent.createSync(recursive: true);
   file.writeAsStringSync(BootstrapTemplate.contents);
   stdout.writeln(
-    'Wrote ${BootstrapTemplate.path}: no service worker, and an inline start '
-    'when the flutter_mcp_app shell is present.',
+    'Wrote ${BootstrapTemplate.path}: no service worker, and the shell\'s '
+    'configuration when the flutter_mcp_app shell is present.',
   );
 }

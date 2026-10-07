@@ -5,55 +5,55 @@ void main() {
   group('McpAppArguments', () {
     test('reads tool arguments and result from the shell object', () {
       final launch = McpAppArguments.fromObject({
-        'arguments': {'game': 'hex'},
-        'result': {'game': 'hex', 'count': 2},
+        'arguments': {'name': 'Ada'},
+        'result': {'name': 'Ada', 'count': 2},
       });
 
-      expect(launch.arguments, {'game': 'hex'});
-      expect(launch.result, {'game': 'hex', 'count': 2});
-      expect(launch.string('game'), 'hex');
+      expect(launch.arguments, {'name': 'Ada'});
+      expect(launch.result, {'name': 'Ada', 'count': 2});
+      expect(launch.string('name'), 'Ada');
     });
 
     test('falls back to the tool result when an argument is missing', () {
       final launch = McpAppArguments.fromObject({
         'arguments': <String, Object?>{},
-        'result': {'game': 'wordmanteau'},
+        'result': {'name': 'Grace'},
       });
 
-      expect(launch.string('game'), 'wordmanteau');
+      expect(launch.string('name'), 'Grace');
     });
 
     test('accepts the loosely typed maps dartify produces', () {
       final launch = McpAppArguments.fromObject(<Object?, Object?>{
-        'arguments': <Object?, Object?>{'game': 'ukodus'},
+        'arguments': <Object?, Object?>{'name': 'Linus'},
         'result': null,
       });
 
-      expect(launch.arguments, {'game': 'ukodus'});
+      expect(launch.arguments, {'name': 'Linus'});
       expect(launch.result, isNull);
     });
 
     test('is empty for a missing or non-object payload', () {
       expect(McpAppArguments.fromObject(null).arguments, isEmpty);
       expect(McpAppArguments.fromObject([1, 2]).arguments, isEmpty);
-      expect(McpAppArguments.fromObject(null).string('game'), isNull);
+      expect(McpAppArguments.fromObject(null).string('name'), isNull);
     });
 
     test('reads JavaScript numbers as integers', () {
       final launch = McpAppArguments.fromObject({
-        'result': {'levelNumber': 103.0},
+        'result': {'count': 3.0},
       });
 
-      expect(launch.integer('levelNumber'), 103);
+      expect(launch.integer('count'), 3);
     });
 
     test('only returns strings from string()', () {
       final launch = McpAppArguments.fromObject({
-        'arguments': {'level': 12},
+        'arguments': {'count': 12},
       });
 
-      expect(launch.string('level'), isNull);
-      expect(launch.arguments['level'], 12);
+      expect(launch.string('count'), isNull);
+      expect(launch.arguments['count'], 12);
     });
   });
 }
