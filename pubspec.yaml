@@ -1,6 +1,8 @@
 name: flutter_mcp_app
 description: Run a Flutter web app as an MCP App inside AI chats such as Claude, including hosts that sandbox it with an opaque origin.
 version: 0.1.0
+repository: https://github.com/EvgheniiBeriozchin/flutter_mcp_app
+issue_tracker: https://github.com/EvgheniiBeriozchin/flutter_mcp_app/issues
 topics:
   - mcp
   - ai
